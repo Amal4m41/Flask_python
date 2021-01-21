@@ -1,0 +1,36 @@
+from flask import Flask
+from flask_restful import Api,Resource
+
+app=Flask(__name__)
+api=Api(app)   #wrapping the app in api 
+
+
+names={
+    'Amal':{'age':19,'gender':'male'},
+    'Messi':{'age':33,'gender':'male'}
+}
+
+
+class HelloWorld(Resource):      #creating a class that inherit from Resource and this Resource has certain methods we can override(to handle requests).
+    def get(self,name):   #overriding the get request fn.
+        return names[name]
+        
+
+
+api.add_resource(HelloWorld,'/helloworld/<string:name>')  #adding resource to the api and setting the route
+if (__name__ == '__main__'):
+    app.run(debug=True)
+
+
+
+---------------------------------------------------------------------------------------------------------------------------
+test.py
+
+import requests
+
+BASE='http://127.0.0.1:5000/'    #location of the api the server is running on.
+
+response=requests.get(BASE+'helloworld/Amal')
+print(response.json()) 
+
+

@@ -1,0 +1,43 @@
+from flask import Flask #, request
+from flask_restful import Api,Resource,reqparse,abort
+from flask_sqlalchemy import SQLAlchemy
+
+app=Flask(__name__)
+api=Api(app)   #wrapping the app in api 
+
+video_put_arg = reqparse.RequestParser()
+video_put_arg.add_argument('name',type=str,help='Name of the video required',required=True)  #help msg is returned if that respective args is not present.
+video_put_arg.add_argument('views',type=str,help='Views of the video required',required=True)
+video_put_arg.add_argument('likes',type=str,help='Likes of the video required',required=True)
+
+videos={}
+
+def abort_if_video_id_doesnt_exist(video_id):
+    if video_id not in videos:
+        abort(404,message="Video id is not valid!")    #returns this message  
+
+def abort_if_video_already_exist(video_id):
+    if video_id in videos:
+        abort(404,message="Video already exists with same id!")    #returns this message  
+
+class Video(Resource):
+    def get(self,video_id):
+        abort_if_video_id_doesnt_exist(video_id)   #to avoid crashing of program if invalid id is received. i.e raise exception instead
+        return videos[video_id]
+
+    def put(self,video_id):
+        abort_if_video_already_exist(video_id)
+        args=video_put_arg.parse_args()
+        videos[video_id]=args
+        return videos[video_id],201    #to send 201 status code in the response
+
+    def delete(self,video_id):
+        abort_if_video_id_doesnt_exist(video_id)
+        del videos[video_id]
+        return '',204
+
+
+
+api.add_resource(Video,'/video/<int:video_id>')  #adding resource to the api and setting the route
+if (__name__ == '__main__'):
+    app.run(debug=True)
